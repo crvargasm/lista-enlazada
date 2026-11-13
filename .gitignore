@@ -1,0 +1,14 @@
+# Objetos y binarios de compilación
+*.o
+*.obj
+*.elf
+
+# Ejecutables (cubre la mayoría de casos, pero no "main" sin extensión)
+*.exe
+*.out
+
+# Binario específico de este proyecto
+main
+
+# Debug
+*.dSYM/

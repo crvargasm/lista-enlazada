@@ -25,51 +25,62 @@ typedef struct Node {
   struct Node *next;
 } Node;
 
-bool insert(Node **top, int value) { // O(1)
+typedef struct List {
+  Node *top;
+  int size;
+} List;
+
+bool insert(List *list, int value) { // O(1)
   Node *new_node = malloc(sizeof(Node));
   new_node->value = value;
-  new_node->next = *top;
-  *top = new_node;
+  new_node->next = list->top;
+  list->top = new_node;
+  list->size += 1;
   return true;
 }
 
-void print(Node *top) { // O(n)
-  if (!top) {
-    printf("Lista vacía\n");
+void print(List list) { // O(n)
+  Node *aux = list.top;
+  if (!aux) {
+    printf("Empty list\n");
     return;
   }
-  while (top) {
-    printf("%d ", top->value);
-    top = top->next;
+  while (aux) {
+    printf("%d ", aux->value);
+    aux = aux->next;
   }
   printf("\n");
   return;
 }
 
-bool pop(Node **top) { // O(1)
-  if (*top) {
-    Node *deleted = (*top);
-    *top = deleted->next;
+bool pop(List *list) { // O(1)
+  if (list->top) {
+    Node *deleted = (list->top);
+    list->top = deleted->next;
     free(deleted);
+    list->size -= 1;
     return true;
   }
   return false;
 }
 
-bool delete_last(Node **top) { // O(n)
-  if (!*top)
+bool delete_last(List *list) { // O(n)
+  Node *head = list->top;
+  if (!head)
     return false;
-  if ((*top)->next == NULL) {
-    free(*top);
-    *top = NULL;
+  if (head->next == NULL) {
+    free(head);
+    list->top = NULL;
+    list->size -= 1;
     return true;
   }
-  Node *prev = *top;
-  Node *aux = (*top)->next;
+  Node *prev = head;
+  Node *aux = head->next;
   while (aux) {
     if ((aux)->next == NULL) {
       free(aux);
       prev->next = NULL;
+      list->size -= 1;
       return true;
     }
     prev = prev->next;
@@ -78,21 +89,24 @@ bool delete_last(Node **top) { // O(n)
   return false;
 }
 
-bool delete(Node **top, int value) { // O(n)
-  if (!*top)
+bool delete(List *list, int value) { // O(n)
+  Node *aux = list->top;
+  if (!aux)
     return false;
-  if ((*top)->value == value) {
-    Node *old = *top;
-    *top = (*top)->next;
+  if (aux->value == value) {
+    Node *old = aux;
+    list->top = aux->next;
     free(old);
+    list->size -= 1;
     return true;
   }
-  Node *prev = *top;
-  Node *cur = (*top)->next;
+  Node *prev = aux;
+  Node *cur = aux->next;
   while (cur) {
     if (cur->value == value) {
       prev->next = cur->next;
       free(cur);
+      list->size -= 1;
       return true;
     }
     prev = prev->next;
@@ -101,8 +115,8 @@ bool delete(Node **top, int value) { // O(n)
   return false;
 }
 
-Node *search(Node *top, int value) {
-  Node *cur = top;
+Node *search(List list, int value) {
+  Node *cur = list.top;
   while (cur) {
     if (cur->value == value) {
       return cur;
@@ -112,17 +126,18 @@ Node *search(Node *top, int value) {
   return NULL;
 }
 
-int length(Node *top) {
+int length(List list) {
   int counter = 0;
-  while (top) {
+  Node *aux = list.top;
+  while (aux) {
     counter++;
-    top = top->next;
+    aux = aux->next;
   }
   return counter;
 }
 
-bool update(Node *top, int old_value, int new_value) {
-  Node *cur = top;
+bool update(List list, int old_value, int new_value) {
+  Node *cur = list.top;
   while (cur) {
     if (cur->value == old_value) {
       cur->value = new_value;
@@ -133,43 +148,46 @@ bool update(Node *top, int old_value, int new_value) {
   return false;
 }
 
-bool free_list(Node **top){
-  while (*top) {
-    Node* old = *top;
-    *top = (*top)->next;
+bool free_list(List *list) {
+  while (list->top) {
+    Node *old = list->top;
+    list->top = list->top->next;
     free(old);
   }
-  return false;
+  list->size = 0;
+  return true;
 }
 
 int main() {
-  Node *top = NULL;
+  List *mi_lista = malloc(sizeof(List));
 
-  insert(&top, 3);
-  insert(&top, 8);
-  insert(&top, 9);
+  insert(mi_lista, 3);
+  insert(mi_lista, 8);
+  insert(mi_lista, 9);
+  print(*mi_lista);
 
-  printf("Longitud: %d\n", length(top));
-  print(top);
+  delete_last(mi_lista);
+  pop(mi_lista);
 
-  Node *resultado = search(top, 3);
+  print(*mi_lista);
+  printf("Longitud function: %d\n", length(*mi_lista));
+  printf("Longitud value: %d\n", mi_lista->size);
+
+  Node *resultado = search(*mi_lista, 4);
   if (resultado) {
     printf("%d\n", resultado->value);
   } else {
     printf("No hay resultado\n");
   }
 
-  update(top, 3, 4);
+  update(*mi_lista, 2, 4);
 
-  delete(&top, 9);
-  print(top);
-  delete(&top, 3);
-  print(top);
+  print(*mi_lista);
+  delete(mi_lista, 2);
+  print(*mi_lista);
 
-  free_list(&top);
-  free_list(&top);
-
-  print(top);
+  free_list(mi_lista);
+  print(*mi_lista);
 
   return 0;
 }
